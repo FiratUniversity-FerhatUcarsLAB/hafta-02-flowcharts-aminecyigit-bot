@@ -1,0 +1,144 @@
+Universite Ders Kayıt Sistemi için bir PSEUDOCODE yazmama yardım eder misin?
+BEGIN DersKayitSistemi
+
+    DISPLAY "Öğrenci Girişi"
+    INPUT ogrenciNo, sifre
+
+    IF GirisKontrol(ogrenciNo, sifre) == TRUE THEN
+
+        dersListesi ← DersleriGetir()
+        DISPLAY "Açık Dersler:"
+        FOR ders IN dersListesi DO
+            DISPLAY ders.ad + " (" + ders.kredi + " kredi, kontenjan: " + ders.kontenjan + ")"
+        END FOR
+
+        toplamKredi ← 0
+        secilenDersler ← []
+        
+        WHILE KayıtDevam == TRUE DO
+            INPUT dersKodu, islemTuru // ekle veya çıkar
+
+            IF islemTuru == "ekle" THEN
+                IF KontenjanUygun(dersKodu) == TRUE AND
+                   OnKosulSaglandi(dersKodu, ogrenciNo) == TRUE AND
+                   ZamanCakismasiYok(dersKodu, secilenDersler) == TRUE AND
+                   (toplamKredi + DersKredi(dersKodu)) <= 35 THEN
+
+                    secilenDersler.ADD(dersKodu)
+                    toplamKredi ← toplamKredi + DersKredi(dersKodu)
+                    DISPLAY "Ders eklendi."
+
+                ELSE
+                    DISPLAY "Ders eklenemedi: Kontrol koşullarından biri sağlanmadı."
+                END IF
+
+            ELSE IF islemTuru == "çıkar" THEN
+                IF dersKodu IN secilenDersler THEN
+                    secilenDersler.REMOVE(dersKodu)
+                    toplamKredi ← toplamKredi - DersKredi(dersKodu)
+                    DISPLAY "Ders çıkarıldı."
+                ELSE
+                    DISPLAY "Bu dersi seçmemişsiniz."
+                END IF
+            END IF
+
+            DISPLAY "Ders ekleme/çıkarma işlemi devam etsin mi? (E/H)"
+            INPUT cevap
+            IF cevap == "H" THEN
+                KayıtDevam ← FALSE
+            END IF
+        END WHILE
+
+        GPA ← GetirNotOrtalamasi(ogrenciNo)
+        IF GPA < 2.5 THEN
+            DISPLAY "Danışman onayı gereklidir."
+        ELSE
+            DISPLAY "Danışman onayı gerekli değil."
+        END IF
+
+        DISPLAY "Kayıt Özeti:"
+        FOR ders IN secilenDersler DO
+            DISPLAY ders
+        END FOR
+        DISPLAY "Toplam Kredi: " + toplamKredi
+        DISPLAY "Kayıt onaylansın mı? (E/H)"
+        INPUT onay
+
+        IF onay == "E" THEN
+            KaydetKayit(ogrenciNo, secilenDersler)
+            DISPLAY "Kayıt başarıyla tamamlandı."
+        ELSE
+            DISPLAY "Kayıt iptal edildi."
+        END IF
+
+    ELSE
+        DISPLAY "Giriş bilgileri hatalı!"
+    END IF
+
+END
+
+bu pseudocode yi dot diline çevir.
+digraph DersKayitSistemi {
+    rankdir=TB;
+    node [shape=box, style=rounded];
+
+    Start [label="Sistem Başlat"];
+    Giris [label="Öğrenci No + Şifre Girişi"];
+    GirisKontrol [label="Giriş Bilgileri Doğru Mu?"];
+    GirisHata [label="Hatalı Giriş\nSistem Sonu"];
+
+    DersListesi [label="Açık Dersler Göster (Döngü)"];
+    DersIslem [label="Ders Ekle/Çıkar Döngüsü"];
+
+    Kontenjan [label="Kontenjan Uygun Mu?"];
+    OnKosul [label="Ön Koşul Uygun Mu?"];
+    ZamanCakis [label="Zaman Çakışması Var Mı?"];
+    KrediKontrol [label="Toplam Kredi ≤ 35 Mi?"];
+    Ekle [label="Ders Eklendi"];
+    EkleHata [label="Ekleme Başarısız"];
+
+    DanismanKontrol [label="GPA < 2.5 Mi?"];
+    DanismanGerekli [label="Danışman Onayı Gerekli"];
+    DanismanDegil [label="Danışman Onayı Gerekli Değil"];
+
+    KayitOzeti [label="Kayıt Özeti Göster"];
+    KayitOnay [label="Kayıt Onayı Al"];
+    KayitTamam [label="Kayıt Başarıyla Tamamlandı"];
+    KayitIptal [label="Kayıt İptal Edildi"];
+
+    End [label="Sistem Sonu"];
+
+    // Akışlar
+    Start -> Giris -> GirisKontrol;
+    GirisKontrol -> DersListesi [label="evet"];
+    GirisKontrol -> GirisHata [label="hayır"];
+    GirisHata -> End;
+
+    DersListesi -> DersIslem;
+
+    DersIslem -> Kontenjan;
+    Kontenjan -> OnKosul [label="evet"];
+    Kontenjan -> EkleHata [label="hayır"];
+    OnKosul -> ZamanCakis [label="evet"];
+    OnKosul -> EkleHata [label="hayır"];
+    ZamanCakis -> KrediKontrol [label="yok"];
+    ZamanCakis -> EkleHata [label="var"];
+    KrediKontrol -> Ekle [label="evet"];
+    KrediKontrol -> EkleHata [label="hayır"];
+
+    Ekle -> DersIslem;
+    EkleHata -> DersIslem;
+
+    DersIslem -> DanismanKontrol [label="Kayıt Bitir"];
+    DanismanKontrol -> DanismanGerekli [label="evet"];
+    DanismanKontrol -> DanismanDegil [label="hayır"];
+
+    DanismanGerekli -> KayitOzeti;
+    DanismanDegil -> KayitOzeti;
+
+    KayitOzeti -> KayitOnay;
+    KayitOnay -> KayitTamam [label="evet"];
+    KayitOnay -> KayitIptal [label="hayır"];
+    KayitTamam -> End;
+    KayitIptal -> End;
+}
