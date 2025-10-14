@@ -1,0 +1,87 @@
+Akıllı Ev Güvenlik Sistemini Sistem aktif mi kontrolü (koşul) Sensör okuma döngüsü (döngü - sürekli) Hareket sensör kontrolü (koşul) 
+Kapı/pencere sensörü kontrolü (koşul) Kamera aktivasyonu (koşul) Yanlış alarm kontrolü (ev sahibi evde mi?) (koşul) Alarm seviyesi belirleme (1-d¨üşük, 2-orta, 3-yüksek) (koşul)
+Bildirim gönderme (SMS + App + Email) Bekle ve tekrar kontrol et (döngü) Alarm sıfırlama veya devam ettirme (koşul) şeklinde yaz
+BEGIN AkilliEvGuvenlikSistemi
+
+    IF SistemAktifMi() == FALSE THEN
+        DISPLAY "Sistem pasif. Güvenlik izleme başlatılmadı."
+        EXIT
+    END IF
+
+    WHILE TRUE DO
+        sensorVerileri ← SensorOku()  // hareket, kapı, pencere
+
+        IF HareketVar(sensorVerileri) == TRUE THEN
+            DISPLAY "Hareket algılandı."
+        END IF
+
+        IF KapiPencereAcik(sensorVerileri) == TRUE THEN
+            DISPLAY "Kapı/Pencere açık!"
+        END IF
+
+        IF HareketVar(sensorVerileri) OR KapiPencereAcik(sensorVerileri) THEN
+            KameraAktifEt()
+            IF EvSahibiEvdeMi() == TRUE THEN
+                DISPLAY "Yanlış alarm. Ev sahibi evde."
+            ELSE
+                alarmSeviyesi ← AlarmSeviyesiBelirle(sensorVerileri)
+                BildirimGonder(alarmSeviyesi)
+            END IF
+        END IF
+
+        DISPLAY "Bekleniyor... Yeni sensör verisi kontrol edilecek."
+        WAIT(10)  // 10 saniye bekle
+
+        IF AlarmDurumu() == "reset" THEN
+            DISPLAY "Alarm sıfırlandı."
+        ELSE
+            DISPLAY "Alarm devam ediyor."
+        END IF
+    END WHILE
+
+END
+digraph AkilliEvGuvenlikSistemi {
+    rankdir=TB;
+    node [shape=box, style=rounded];
+
+    Start [label="Sistem Başlat"];
+    Kontrol [label="Sistem Aktif Mi?"];
+    Pasif [label="Sistem Pasif\nÇıkış"];
+    SensorOku [label="Sensör Verisi Oku (Sürekli Döngü)"];
+    HareketKontrol [label="Hareket Algılandı Mı?"];
+    KapiKontrol [label="Kapı/Pencere Açık Mı?"];
+    KameraAktif [label="Kamera Aktivasyonu"];
+    EvdeMi [label="Ev Sahibi Evde Mi?"];
+    YanlisAlarm [label="Yanlış Alarm - Ev Sahibi Evde"];
+    AlarmSeviye [label="Alarm Seviyesi Belirle (1/2/3)"];
+    Bildirim [label="SMS + App + Email Gönder"];
+    Bekle [label="10 Saniye Bekle"];
+    AlarmDurum [label="Alarm Sıfırlandı Mı?"];
+    Devam [label="Alarm Devam Ediyor"];
+    Reset [label="Alarm Sıfırlandı"];
+    SensorTekrar [label="Yeni Veriyi Oku"];
+
+    // Akışlar
+    Start -> Kontrol;
+    Kontrol -> Pasif [label="hayır"];
+    Kontrol -> SensorOku [label="evet"];
+    SensorOku -> HareketKontrol;
+    HareketKontrol -> KapiKontrol;
+    KapiKontrol -> KameraAktif;
+
+    KameraAktif -> EvdeMi;
+    EvdeMi -> YanlisAlarm [label="evet"];
+    EvdeMi -> AlarmSeviye [label="hayır"];
+
+    YanlisAlarm -> Bekle;
+    AlarmSeviye -> Bildirim;
+    Bildirim -> Bekle;
+
+    Bekle -> AlarmDurum;
+    AlarmDurum -> Reset [label="evet"];
+    AlarmDurum -> Devam [label="hayır"];
+
+    Reset -> SensorTekrar;
+    Devam -> SensorTekrar;
+    SensorTekrar -> SensorOku;
+}
