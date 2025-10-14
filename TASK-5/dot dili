@@ -1,0 +1,45 @@
+digraph AkilliEvGuvenlikSistemi {
+    rankdir=TB;
+    node [shape=box, style=rounded];
+
+    Start [label="Sistem Başlat"];
+    Kontrol [label="Sistem Aktif Mi?"];
+    Pasif [label="Sistem Pasif\nÇıkış"];
+    SensorOku [label="Sensör Verisi Oku (Sürekli Döngü)"];
+    HareketKontrol [label="Hareket Algılandı Mı?"];
+    KapiKontrol [label="Kapı/Pencere Açık Mı?"];
+    KameraAktif [label="Kamera Aktivasyonu"];
+    EvdeMi [label="Ev Sahibi Evde Mi?"];
+    YanlisAlarm [label="Yanlış Alarm - Ev Sahibi Evde"];
+    AlarmSeviye [label="Alarm Seviyesi Belirle (1/2/3)"];
+    Bildirim [label="SMS + App + Email Gönder"];
+    Bekle [label="10 Saniye Bekle"];
+    AlarmDurum [label="Alarm Sıfırlandı Mı?"];
+    Devam [label="Alarm Devam Ediyor"];
+    Reset [label="Alarm Sıfırlandı"];
+    SensorTekrar [label="Yeni Veriyi Oku"];
+
+    // Akışlar
+    Start -> Kontrol;
+    Kontrol -> Pasif [label="hayır"];
+    Kontrol -> SensorOku [label="evet"];
+    SensorOku -> HareketKontrol;
+    HareketKontrol -> KapiKontrol;
+    KapiKontrol -> KameraAktif;
+
+    KameraAktif -> EvdeMi;
+    EvdeMi -> YanlisAlarm [label="evet"];
+    EvdeMi -> AlarmSeviye [label="hayır"];
+
+    YanlisAlarm -> Bekle;
+    AlarmSeviye -> Bildirim;
+    Bildirim -> Bekle;
+
+    Bekle -> AlarmDurum;
+    AlarmDurum -> Reset [label="evet"];
+    AlarmDurum -> Devam [label="hayır"];
+
+    Reset -> SensorTekrar;
+    Devam -> SensorTekrar;
+    SensorTekrar -> SensorOku;
+}
