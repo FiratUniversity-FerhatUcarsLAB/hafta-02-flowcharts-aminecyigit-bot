@@ -1,11 +1,3 @@
-ATM den para çekmek için gereken algoritma için kısaca bir açıklama yapabilir misin?
-PIN Doğrulama: Kart ve PIN kontrol edilir. (3 hatalı denemede bloke).
-
-Tutar/Bakiye Kontrolü: İstenen tutar, mevcut bakiye ve işlem limitleri ile karşılaştırılır.
-
-İşlem: Kontroller başarılıysa, hesap bakiyesi güncellenir ve ATM parayı dağıtır.
-
-Kapanış: Kart iade edilir.
 
 ATM para çekme sistemi için detaylı pseudocode yaz. PIN
 kontrolü (3 deneme), bakiye kontrolü, tutar kontrolü içermeli
